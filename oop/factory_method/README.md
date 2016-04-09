@@ -1,0 +1,2 @@
+- Factory Methodパターン
+  - 後で書くwwwwwww
