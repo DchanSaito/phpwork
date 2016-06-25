@@ -1,0 +1,48 @@
+version: "2"
+services:
+    web:
+        build: .
+        links:
+            - "db:mysql"
+        volumes:
+            - "./app:/var/www/html"
+    nginx:
+        build: nginx/
+        ports:
+            - "80:8080"
+        links:
+            - "web"
+        volumes:
+            - "./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf"
+        logging:
+            driver: 'fluentd'
+        depends_on:
+            - fluent
+    db:
+        image: mysql
+        volumes_from:
+            - dataonly
+        environment:
+            MYSQL_ROOT_PASSWORD: password
+    dataonly:
+        image: busybox
+        volumes:
+            - "/var/lib/mysql"
+    fluent:
+        build: fluentd
+        ports:
+            - "24224:24224"
+        volumes:
+            - ./fluentd/conf:/fluentd/etc
+        environment:
+            FLUENTD_CONF: fluent.conf
+    elasticsearch:
+        build: elastic_search
+        expose:
+            - 9200
+    kibana:
+        image: kibana
+        links:
+            - elasticsearch
+        ports:
+            - "5601:5601"
